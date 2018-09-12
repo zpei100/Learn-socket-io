@@ -1,10 +1,35 @@
 const path = require('path');
 const express = require('express');
+const socketIO = require('socket.io');
+const http = require('http');
+
+const {createMessage, createLocationMessage} = require('./helpers/createMessage.js');
 
 const public = path.join(__dirname, '../public');
 const app = express();
+const server = http.createServer(app);
+
+const io = socketIO(server);
 const port = process.env.PORT || 3000;
 
 app.use(express.static(public));
 
-app.listen(port, () => console.log(`server is up on port ${port}`));
+io.on('connection', socket => {
+  console.log('A new user is connected');
+
+  socket.on('userJoined', () => {
+    socket.emit('newMessage', createMessage('Admin', 'Welcome to the chat room !!!'))
+    socket.broadcast.emit('anotherUserJoined');
+  })  
+
+  socket.on('createMessage', (message) => {
+    const newMessage = createMessage('user', message);
+    socket.broadcast.emit('newMessage', newMessage)   
+  });
+
+  socket.on('sendLocation', ({latitude, longitude}) => {
+    io.emit('sendLocationMessage', createLocationMessage('Admin', latitude, longitude))
+  })
+})
+
+server.listen(port, () => console.log(`server is up on port ${port}`));
