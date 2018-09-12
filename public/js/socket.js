@@ -1,4 +1,7 @@
 var socket = io();
+var createMoment = function(time) {
+  return moment(time).format('h:mm a');
+}
 
 socket.on('connect', () => {
   socket.emit('userJoined');
@@ -18,17 +21,33 @@ $('#sendMessage').on('click', function(e) {
 
 socket.on('newMessage', function(newMessage) {
   const li = $('<li></li>');
-  li.text(`${newMessage.from}: ${newMessage.message}`);
+  li.text(`${newMessage.from} @${createMoment(newMessage.createdAt)}: ${newMessage.message}  `);
   $('#messages').append(li);
 });
 
-$('#locationButton').on('click', function() {
+var locationButton = $('#locationButton')
+locationButton.on('click', function() {
+
+  var disableButton = function (btn) {
+    btn.text('Sending...')
+    btn.attr('disabled', 'disabled')
+  }
+
+  var enableButton = function(btn, text) {
+    btn.removeAttr('disabled')
+    btn.text(text);
+  }
+  
+  disableButton(locationButton);
+
   navigator.geolocation.getCurrentPosition(
     function(location) {
+      enableButton(locationButton, 'Send Location');
       var position = location.coords;
       socket.emit('sendLocation', position.latitude, position.longitude);
     },
     function() {
+      locationButton.removeAttr('disabled');
       alert('Could not fetch location!');
     }
   );
@@ -37,7 +56,7 @@ $('#locationButton').on('click', function() {
 socket.on('sendLocationMessage', function(locationMessage) {
   console.log('locationMessage:', locationMessage);
   var li = $('<li></li>');
-  li.text(`From: ${locationMessage.from}: `);
+  li.text(`${locationMessage.from} @${createMoment(locationMessage.createdAt)}: `);
 
   var a = $('<a></a>');
   a.text('My Location');
