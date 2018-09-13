@@ -27,6 +27,8 @@ io.on('connection', socket => {
       //Joining the room is neccessary for listenning, not for emmitting
       socket.join(user.room)
       users.addUser(socket.id, user);
+      
+      io.to(user.room).emit('usersUpdated', users.inRoom(user.room))
 
       socket.emit('newMessage', createMessage('Admin', 'Welcome to the chat room !!!'))
   
@@ -35,13 +37,24 @@ io.on('connection', socket => {
   })  
 
   socket.on('disconnect', () => {
+    io.to(users.getUsers()[socket.id].room).emit('newMessage', createMessage(users.getUsers()[socket.id].name, 'has left the room'));
+
+    io.to(users.getUsers()[socket.id].room).emit('usersUpdated', users.inRoom(users.getUsers()[socket.id].room))
+
     users.removeUser(socket.id);
+
+    
   })
 
-  socket.on('createMessage', (message) => {
-    const newMessage = createMessage(users.getUsers()[socket.id].name, message);
-
-    socket.broadcast.to(users.getUsers()[socket.id].room).emit('newMessage', newMessage)   
+  socket.on('createMessage', (message, callback) => {
+    
+    if (isValidString(message)) {
+      const newMessage = createMessage(users.getUsers()[socket.id].name, message);
+  
+      io.to(users.getUsers()[socket.id].room).emit('newMessage', newMessage)   
+    } else {
+      callback('Please enter a message');
+    }
   });
 
   socket.on('sendLocation', (lat, long) => {

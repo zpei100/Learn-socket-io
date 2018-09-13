@@ -14,10 +14,23 @@ socket.on('connect', () => {
   });
 });
 
+//could maybe redesign the rendering so it will add / remove the user name one at a time instead of rerendering the entire page
+
+socket.on('usersUpdated', function(users) {
+  $('#users').html('');
+  users.forEach(function(user) {
+    var template = $('#users-template').html()
+    var li = Mustache.render(template, {user})
+    $('#users').append(li)
+  })
+})
+
 $('#sendMessage').on('click', function(e) {
   e.preventDefault();
   var message = $('#message')[0];
-  socket.emit('createMessage', message.value);
+  socket.emit('createMessage', message.value, function(e) {
+    alert(e);
+  });
   message.value = '';
 });
 

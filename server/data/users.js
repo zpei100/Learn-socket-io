@@ -14,12 +14,12 @@ var users = (function() {
     start: function() {
       users = {}
     },
-    roomUsers: function(room) {
-      var allUsers = Object.keys(users);
-      return allUsers.filter(function(user) {
-        return user.room === room;
-      }).map(function(user) {
-        user.name;
+    inRoom: function(room) {
+      var allIDs = Object.keys(users);
+      return allIDs.filter(function(id) {
+        return users[id].room === room;
+      }).map(function(id) {
+        return users[id].name;
       })
     }
 
