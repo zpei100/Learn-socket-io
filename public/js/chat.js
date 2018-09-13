@@ -1,22 +1,24 @@
 var socket = io();
 var createMoment = function(time) {
   return moment(time).format('h:mm a');
-}
+};
+
+var user = $.deparam(window.location.search);
+// user is an object with name and room properties
 
 socket.on('connect', () => {
-  socket.emit('userJoined');
-});
-
-socket.on('anotherUserJoined', function() {
-  //later, replace with actual user information
-  console.log('Another user has joined!');
+  //Question: how is this error handling function called inside the browser, when it is clearly called in server.js?
+  socket.emit('userJoined', user, function(err) {
+    alert(err);
+    window.location.href = '/';
+  });
 });
 
 $('#sendMessage').on('click', function(e) {
   e.preventDefault();
   var message = $('#message')[0];
   socket.emit('createMessage', message.value);
-  message.value = ''; 
+  message.value = '';
 });
 
 socket.on('newMessage', function(newMessage) {
@@ -30,19 +32,18 @@ socket.on('newMessage', function(newMessage) {
   $('#messages').append(message);
 });
 
-var locationButton = $('#locationButton')
+var locationButton = $('#locationButton');
 locationButton.on('click', function() {
-
-  var disableButton = function (btn) {
-    btn.text('Sending...')
-    btn.attr('disabled', 'disabled')
-  }
+  var disableButton = function(btn) {
+    btn.text('Sending...');
+    btn.attr('disabled', 'disabled');
+  };
 
   var enableButton = function(btn, text) {
-    btn.removeAttr('disabled')
+    btn.removeAttr('disabled');
     btn.text(text);
-  }
-  
+  };
+
   disableButton(locationButton);
 
   navigator.geolocation.getCurrentPosition(
@@ -59,7 +60,6 @@ locationButton.on('click', function() {
 });
 
 socket.on('sendLocationMessage', function(locationMessage) {
-
   var template = $('#location-message-template').html();
   var message = Mustache.render(template, {
     from: locationMessage.from,

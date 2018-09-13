@@ -1,0 +1,23 @@
+socketio is a library that binds a 'socket' to server / connection? It maintains a connection between the client and the server.
+
+Use express to create a local server, then (why?) recreate a new server using http.createrServer(app), and set it up on a port.
+
+Bind io to this server simply by io = socketIO(server).
+
+All io codes go into a io.on('connection', callback(socket)) block.
+In this block, we can set up socket.on, socket.emit, socket.join, socket.leave, and io.emit, socket.broadcast, socket.to(room).action 
+
+the last argument to a socket.on call is always a callback function, this callback has access to all variables passed in by the emit event
+
+In socket.emit, we can pass in first: the name of the emit, second: all arguments passed in, this can include a callback function to be called on the other side.
+
+
+A user first visits index.html where they fill out a form with their name and room name. The client then emits a join event. The server takes the user object: {name, room}, performs validation, then emits an event back. If validation passes, the user joins the room and receives acknowledgement from the server in the form of a message. If validation fails, the user receives an alert and gets directed back to the root page.
+
+When a form is submitted, the action attribute directs the user to the chat.html file. The values of the input fields appear as a search string inside window.location. It can be accessed as window.location.search. 
+
+We imported a module, then when called, addes a property to the jQuery library: deparam, involving regular expressions, and 'translates' the search string into a usable object with name and room properties.
+
+Whenever a user sends a message, the socket emits an event to the server. The server takes the message and creates a new message object. From the socket, it broadcasts this message object to all other usesrs in the same room (they are in the room when their sockets connect and pass validation). On their client side, a listener takes this message object and renders it with a mustache template.
+
+When a user clicks the send location button, they use the built in navigator object inside the browser to make a API request to obtain their coordinates (this obviously cant be done on the server side). THe server takes the coordinates, create a new location message object with a url property, use the socket to broadcast this object to all other users in this room. The clients then render a link with this new url.
